@@ -1,9 +1,65 @@
+from __future__ import annotations
 import sys
 from typing import List, Optional
-from src.dataStructures.dumbbell import Dumbbell
 
-from src.dataStructures.edge import Edge
 
+class Tree:
+  root: Flower
+
+  def __init__(self, root: Flower):
+    self.root = root
+
+  def getNoVertexWithZeroCharge(self) -> Optional[Flower]:
+    return self.root.getNoVertexWithZeroCharge()
+
+  @staticmethod
+  def findLCA(K: Flower, H: Flower) -> Flower:
+    node1: Optional[Flower] = K
+    node2: Optional[Flower] = H
+
+    # Find depths of both nodes
+    depth1 = K.depth()
+    depth2 = H.depth()
+
+    # Make sure node1 is deeper
+    if depth2 > depth1:
+        node1, node2 = node2, node1
+        depth1, depth2 = depth2, depth1
+
+    assert node1 is not None
+    assert node2 is not None
+    # Move node1 to the same depth as node2
+    while depth1 > depth2:
+        assert node1.parent is not None
+        node1 = node1.parent
+        depth1 -= 1
+
+    # Move both nodes up until they meet
+    while node1 != node2:
+        assert node1 is not None
+        assert node2 is not None
+        node1 = node1.parent
+        node2 = node2.parent
+
+    if node1 is None:
+       raise ValueError("FAIL when finding LCA! Flowers may not be in the same tree.")
+
+    return node1
+  
+  @staticmethod
+  def getSubtreesNotInAlternatingPath(root: Flower, alternatingPath: list[Flower]) -> list[Flower]:
+    result: list[Flower] = []
+    nextInPath: Optional[Flower] = None
+    for child in root.children:
+        if child not in alternatingPath:
+            result.append(child)
+        else:
+           nextInPath = child
+    if nextInPath is not None:
+       result.extend(Tree.getSubtreesNotInAlternatingPath(nextInPath, alternatingPath))
+
+    return result
+    
 
 class Flower:
   parent: Optional['Flower']
@@ -118,3 +174,58 @@ class Flower:
 
     for child in self.children:
       child.changeChargeByEpsilon(level + 1, epsilon)
+
+
+class Edge:
+  v1: Flower
+  v2: Flower
+  capacity: float
+  textRepr: str
+
+  def __init__(self, v1: Flower, v2: Flower, capacity: float, textRepr: str):
+    self.v1 = v1
+    self.v2 = v2
+    self.capacity = capacity
+    self.textRepr = textRepr
+
+  def getCurrentCharge(self) -> float:
+    return self.v1.getTotalCharge() + self.v2.getTotalCharge()
+  
+  def getEpsilon(self) -> float:
+    return self.capacity - self.getEpsilon()
+
+
+class Dumbbell:
+  f1: Flower
+  f2: Flower
+  edge: Edge
+
+  def __init__(self, f1: Flower, f2: Flower, edge: Edge):
+    self.f1 = f1
+    self.f2 = f2
+    self.edge = edge
+
+  def makeIntoSubTree(self, edge: Edge) -> Flower:
+    # Find out which edge end is actually in the dumbbell.
+    endVertex: Flower = edge.v1
+    endVertexOuter: Flower = endVertex.getTotalOuterFlower()
+    if endVertexOuter != self.f1 and endVertexOuter != self.f2:
+      endVertex = edge.v2
+      endVertexOuter = endVertex.getTotalOuterFlower()
+    
+    # Find out what is the flower conencted by the edge
+    if endVertexOuter == self.f1:
+      self.f1.children = [self.f2]
+      self.f2.children = []
+      self.f2.parent = self.f1
+      return self.f1
+    elif endVertexOuter == self.f2:
+      self.f2.children = [self.f1]
+      self.f1.children = []
+      self.f1.parent = self.f2
+      return self.f2
+    else:
+      raise ValueError("Unknown error when connecting dumbbell via edge.")
+    
+  def containsFlower(self, flower: Flower) -> bool:
+    return self.f1 == flower or self.f2 == flower

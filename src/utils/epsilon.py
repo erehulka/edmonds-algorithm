@@ -1,8 +1,5 @@
 import sys
-from src.dataStructures.dumbbell import Dumbbell
-from src.dataStructures.edge import Edge
-from src.dataStructures.tree import Tree
-
+from src.dataStructures import Dumbbell, Edge, Tree
 from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
 
 

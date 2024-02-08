@@ -1,6 +1,4 @@
-from src.dataStructures.dumbbell import Dumbbell
-from src.dataStructures.flower import Flower
-from src.dataStructures.tree import Tree
+from src.dataStructures import Dumbbell, Flower, Tree
 
 
 def isInDumbbell(flower: Flower, dumbbells: list[Dumbbell]) -> bool:

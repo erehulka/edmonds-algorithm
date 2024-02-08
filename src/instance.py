@@ -1,37 +1,40 @@
 from re import A
-import sys
 from typing import List
-from src.dataStructures.dumbbell import Dumbbell
-from src.dataStructures.edge import Edge
-from src.dataStructures.flower import Flower
-from src.dataStructures.tree import Tree
+from src.dataStructures import Dumbbell, Edge, Flower, Tree
 from src.utils.epsilon import calculateEpsilon
 from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
 
 
 class Instance:
-  _trees: List[Tree]
-  _dumbbells: List[Dumbbell]
-  _selectedEdges: List[Edge]
-  _blockingEdges: List[Edge]
-  _otherEdges: List[Edge]
+  trees: List[Tree]
+  dumbbells: List[Dumbbell]
+  selectedEdges: List[Edge]
+  blockingEdges: List[Edge]
+  otherEdges: List[Edge]
+
+  def __init__(self) -> None:
+    self.trees = []
+    self.dumbbells = []
+    self.selectedEdges = []
+    self.blockingEdges = []
+    self.otherEdges = []
 
   def action(self) -> None:
     # First move through the instance, find out if something has to be done, if yes, perform it
     # If some not-vertex bubble in some tree has charge 0, perform P1.
-    for tree in self._trees:
+    for tree in self.trees:
       flower = tree.getNoVertexWithZeroCharge()
       if flower is not None:
         self.P1(flower)
         return
      
-    for edge in self._otherEdges:
+    for edge in self.otherEdges:
       if edge.getCurrentCharge() >= edge.capacity:
         outerFlower1 = edge.v1.getTotalOuterFlower()
         outerFlower2 = edge.v2.getTotalOuterFlower()
 
         # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
-        for dumbbell in self._dumbbells:
+        for dumbbell in self.dumbbells:
           if dumbbell.containsFlower(outerFlower1):
             # Meaning that the other flower is on even level
             self.P2(outerFlower2, dumbbell, edge)
@@ -48,15 +51,15 @@ class Instance:
         self.P4(edge)
 
     # If nothing was changed, it is needed to find the epsilon value which can be applied to each outer flower.
-    epsilon: float = calculateEpsilon(self._trees, self._otherEdges, self._dumbbells)
+    epsilon: float = calculateEpsilon(self.trees, self.otherEdges, self.dumbbells)
 
     # Change the charges
-    for tree in self._trees:
+    for tree in self.trees:
       tree.root.changeChargeByEpsilon(0, epsilon)
 
   def run(self) -> None:
-    # Opakuj action pokým nie sú všetky kvetiny v dumbbelloch (kým sú trees neprázdne)
-    while len(self._trees) > 0:
+    # Repeat until all instances are dumbbells
+    while len(self.trees) > 0:
       self.action()
     
   def P1(self, flower: Flower) -> None:
@@ -127,7 +130,7 @@ class Instance:
     """
 
     # Remove the dumbbell from dumbbells.
-    self._dumbbells.remove(dumbbell)
+    self.dumbbells.remove(dumbbell)
 
     # Transform the dumbbell into a subtree.
     subtree: Flower = dumbbell.makeIntoSubTree(edge)
@@ -137,7 +140,7 @@ class Instance:
     subtree.parent = flower
 
     # Add the edge to blocking
-    self._blockingEdges.append(edge)
+    self.blockingEdges.append(edge)
 
   def P3(self, edge: Edge) -> None:
     """
@@ -232,26 +235,26 @@ class Instance:
     addToM = True
     for edge in alternatingPath:
       if addToM:
-        self._blockingEdges.remove(edge)
-        self._selectedEdges.append(edge)
+        self.blockingEdges.remove(edge)
+        self.selectedEdges.append(edge)
       else:
-        self._selectedEdges.remove(edge)
-        self._blockingEdges.append(edge)
+        self.selectedEdges.remove(edge)
+        self.blockingEdges.append(edge)
       addToM = not addToM
 
     # Destructurize the tree into dumbbells
     # First, make each pair from the path into dumbbells
     assert len(alternatingOuterFlowers) % 2 == 0
     for i in range(0, len(alternatingOuterFlowers), 2):
-      self._dumbbells.append(Dumbbell(alternatingOuterFlowers[i], alternatingOuterFlowers[i+1], alternatingOuterFlowersEdges[i]))
+      self.dumbbells.append(Dumbbell(alternatingOuterFlowers[i], alternatingOuterFlowers[i+1], alternatingOuterFlowersEdges[i]))
     
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
     subtrees: list[Flower] = Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[0], alternatingOuterFlowers) + Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[-1], alternatingOuterFlowers)
     for subtree in subtrees:
-      self._dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
+      self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
 
     # Finally delete the trees so only dumbbells will be left.
-    for tree in self._trees:
+    for tree in self.trees:
       if tree.root == alternatingOuterFlowers[0] or tree.root == alternatingOuterFlowers[-1]:
-        self._trees.remove(tree)
+        self.trees.remove(tree)
