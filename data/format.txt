@@ -1,0 +1,14 @@
+VSTUP
+
+Prvy riadok obsahuje dve cisla: 
+n = pocet vrcholov
+m = pocet hran.
+
+Nasleduje m riadkov tvaru
+u v w
+oznacujucich hranu u-v s vahou w 
+Vsetko su kladne cele cisla, t.j. vrcholy su cislovane od 1.
+
+VYSTUP
+
+Prvy riadok je cena parovania, nasleduju vymenovane hrany v parovani

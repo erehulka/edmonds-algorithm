@@ -5,6 +5,8 @@ from src.dataStructures.dumbbell import Dumbbell
 from src.dataStructures.edge import Edge
 from src.dataStructures.flower import Flower
 from src.dataStructures.tree import Tree
+from src.utils.epsilon import calculateEpsilon
+from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
 
 
 class Instance:
@@ -46,21 +48,7 @@ class Instance:
         self.P4(edge)
 
     # If nothing was changed, it is needed to find the epsilon value which can be applied to each outer flower.
-    # No flower on even level can get charge 0
-    epsilon: float = sys.float_info.max
-    for tree in self._trees:
-      treeEpsilon = tree.root.getMinEpsilon(0)
-      if treeEpsilon < epsilon:
-        epsilon = treeEpsilon
-
-    assert epsilon > 0 and epsilon < sys.float_info.max
-
-    for edge in self._otherEdges:
-      # If one end is in a dumbbell and the other one at an even level in some tree, we can add only what the edge can take
-      # TODO
-      # If both ends are at an even level in some tree (may be the same one), we can add only half what it can take
-      # TODO
-      pass
+    epsilon: float = calculateEpsilon(self._trees, self._otherEdges, self._dumbbells)
 
     # Change the charges
     for tree in self._trees:

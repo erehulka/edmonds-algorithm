@@ -62,6 +62,13 @@ class Flower:
 
     return result
   
+  def getAllSuccessors(self) -> list['Flower']:
+    result = [self]
+    for child in self.children:
+      result.extend(child.getAllSuccessors())
+
+    return result
+  
   def changeSubtreeIntoDumbbells(self) -> list[Dumbbell]:
     if self.depth() % 2 == 1:
       assert len(self.children) == 1
