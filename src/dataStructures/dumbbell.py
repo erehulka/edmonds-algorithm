@@ -33,3 +33,6 @@ class Dumbbell:
       return self.f2
     else:
       raise ValueError("Unknown error when connecting dumbbell via edge.")
+    
+  def containsFlower(self, flower: Flower) -> bool:
+    return self.f1 == flower or self.f2 == flower

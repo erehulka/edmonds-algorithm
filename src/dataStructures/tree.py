@@ -5,6 +5,9 @@ from src.dataStructures.flower import Flower
 class Tree:
   root: Flower
 
+  def getNoVertexWithZeroCharge(self) -> Optional[Flower]:
+    return self.root.getNoVertexWithZeroCharge()
+
   @staticmethod
   def findLCA(K: Flower, H: Flower) -> Flower:
     node1: Optional[Flower] = K

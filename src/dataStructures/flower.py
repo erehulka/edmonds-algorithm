@@ -1,3 +1,4 @@
+import sys
 from typing import List, Optional
 from src.dataStructures.dumbbell import Dumbbell
 
@@ -73,3 +74,40 @@ class Flower:
       result.extend(child.changeSubtreeIntoDumbbells())
 
     return result
+  
+  def getNoVertexWithZeroCharge(self) -> Optional['Flower']:
+    if self.charge == 0 and len(self.innerFlowers) > 0:
+      return self
+    for child in self.children:
+      response = child.getNoVertexWithZeroCharge()
+      if response is not None:
+        return response
+      
+    return None
+  
+  def getRoot(self) -> 'Flower':
+    if self.parent is None:
+      return self
+    
+    return self.parent.getRoot()
+  
+  def getMinEpsilon(self, level: int) -> float:
+    epsilon = sys.float_info.max
+    for child in self.children:
+      childEpsilon = child.getMinEpsilon(level + 1)
+      if childEpsilon < epsilon:
+        epsilon = childEpsilon
+
+    if level % 2 == 1 and self.charge < epsilon:
+      epsilon = self.charge
+    
+    return epsilon
+
+  def changeChargeByEpsilon(self, level: int, epsilon: float) -> None:
+    if level % 2 == 0:
+      self.charge += epsilon
+    else:
+      self.charge -= epsilon
+
+    for child in self.children:
+      child.changeChargeByEpsilon(level + 1, epsilon)

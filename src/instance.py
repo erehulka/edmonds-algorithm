@@ -1,4 +1,5 @@
 from re import A
+import sys
 from typing import List
 from src.dataStructures.dumbbell import Dumbbell
 from src.dataStructures.edge import Edge
@@ -9,21 +10,65 @@ from src.dataStructures.tree import Tree
 class Instance:
   _trees: List[Tree]
   _dumbbells: List[Dumbbell]
-  _soloFlowers: List[Flower]
   _selectedEdges: List[Edge]
   _blockingEdges: List[Edge]
+  _otherEdges: List[Edge]
 
   def action(self) -> None:
-    # 1: Prejdi inštanciu, ak zistíš že treba dačo vykonať, tak to vykonaj.
+    # First move through the instance, find out if something has to be done, if yes, perform it
     # If some not-vertex bubble in some tree has charge 0, perform P1.
+    for tree in self._trees:
+      flower = tree.getNoVertexWithZeroCharge()
+      if flower is not None:
+        self.P1(flower)
+        return
+     
+    for edge in self._otherEdges:
+      if edge.getCurrentCharge() >= edge.capacity:
+        outerFlower1 = edge.v1.getTotalOuterFlower()
+        outerFlower2 = edge.v2.getTotalOuterFlower()
 
-    # 2. Zisti hodnotu epsilon o ktorú sa dajú náboje zmeniť
-    # 3: V prípade, že sa nič nevykonalo, zmeň náboje.
-    pass
+        # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
+        for dumbbell in self._dumbbells:
+          if dumbbell.containsFlower(outerFlower1):
+            # Meaning that the other flower is on even level
+            self.P2(outerFlower2, dumbbell, edge)
+            return
+          elif dumbbell.containsFlower(outerFlower2):
+            self.P2(outerFlower1, dumbbell, edge)
+            return
+          
+        # If some edge between flowers in one tree has been filled, perform P3.
+        if outerFlower1.getRoot() == outerFlower2.getRoot():
+          self.P3(edge)
+
+        # Otherwise perform P4
+        self.P4(edge)
+
+    # If nothing was changed, it is needed to find the epsilon value which can be applied to each outer flower.
+    # No flower on even level can get charge 0
+    epsilon: float = sys.float_info.max
+    for tree in self._trees:
+      treeEpsilon = tree.root.getMinEpsilon(0)
+      if treeEpsilon < epsilon:
+        epsilon = treeEpsilon
+
+    assert epsilon > 0 and epsilon < sys.float_info.max
+
+    for edge in self._otherEdges:
+      # If one end is in a dumbbell and the other one at an even level in some tree, we can add only what the edge can take
+      # TODO
+      # If both ends are at an even level in some tree (may be the same one), we can add only half what it can take
+      # TODO
+      pass
+
+    # Change the charges
+    for tree in self._trees:
+      tree.root.changeChargeByEpsilon(0, epsilon)
 
   def run(self) -> None:
-    # Opakuj action pokým nie sú všetky kvetiny v dumbbelloch (kým sú trees a soloFlowers neprázdne)
-    while len(self._trees) > 0 and len(self._soloFlowers) > 0:
+    # Opakuj action pokým nie sú všetky kvetiny v dumbbelloch (kým sú trees neprázdne)
+    while len(self._trees) > 0:
       self.action()
     
   def P1(self, flower: Flower) -> None:

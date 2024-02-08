@@ -8,3 +8,6 @@ class Edge:
 
   def getCurrentCharge(self) -> float:
     return self.v1.getTotalCharge() + self.v2.getTotalCharge()
+  
+  def getEpsilon(self) -> float:
+    return self.capacity - self.getEpsilon()
