@@ -14,7 +14,7 @@ def parseFileAndReturnInstance(fileName: str) -> Instance:
       result.trees.append(Tree(Flower(None, None, [], [])))
     
     for line in file:
-      values = firstLine.split()
+      values = line.split()
       v1 = result.trees[int(values[0]) - 1].root
       v2 = result.trees[int(values[1]) - 1].root
       capacity = int(values[2])

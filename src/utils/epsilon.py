@@ -10,8 +10,6 @@ def calculateEpsilon(trees: list[Tree], otherEdges: list[Edge], dumbbells: list[
     if treeEpsilon < epsilon:
       epsilon = treeEpsilon
 
-  assert epsilon > 0 and epsilon < sys.float_info.max
-
   for edge in otherEdges:
     # It must connect separate flowers
     if edge.v1.getTotalOuterFlower() == edge.v2.getTotalOuterFlower():
@@ -26,5 +24,7 @@ def calculateEpsilon(trees: list[Tree], otherEdges: list[Edge], dumbbells: list[
       edgeEpsilon = edge.getEpsilon() / 2
       if edgeEpsilon < epsilon:
         epsilon = edgeEpsilon
+  
+  assert epsilon > 0 and epsilon < sys.float_info.max
 
   return epsilon

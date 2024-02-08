@@ -192,7 +192,7 @@ class Edge:
     return self.v1.getTotalCharge() + self.v2.getTotalCharge()
   
   def getEpsilon(self) -> float:
-    return self.capacity - self.getEpsilon()
+    return self.capacity - self.getCurrentCharge()
 
 
 class Dumbbell:
