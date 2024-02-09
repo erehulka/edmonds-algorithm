@@ -5,7 +5,6 @@ from src.enums.edge import EdgeType
 from src.utils.alternatingPath import findAlternatingPath, findSubtrees, getVerticesOnAlternatingPath
 from src.utils.edge import findConnectingEdge
 from src.utils.epsilon import calculateEpsilon
-from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
 
 
 class Instance:
@@ -216,6 +215,13 @@ class Instance:
       W.parent.children.append(newFlower)
     newFlower.parent = W.parent
     newFlower.parentEdge = W.parentEdge
+    
+    # If this is a new root of the tree, change the root accordingly.
+    if newFlower.parent is None:
+      for tree in self.trees:
+        if tree.root == W:
+          tree.root = newFlower
+          break
 
     # Set outerFlower of all inner flowers.
     for flower in innerFlowers:
