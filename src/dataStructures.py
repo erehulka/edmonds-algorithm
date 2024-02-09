@@ -236,7 +236,7 @@ class Dumbbell:
     self.f2 = f2
     self.edge = edge
 
-  def makeIntoSubTree(self, edge: Edge) -> Flower:
+  def makeIntoSubTree(self, edge: Edge, connectingEdge: Edge) -> Flower:
     # Find out which edge end is actually in the dumbbell.
     endVertex: Flower = edge.v1
     endVertexOuter: Flower = endVertex.getTotalOuterFlower()
@@ -249,11 +249,13 @@ class Dumbbell:
       self.f1.children = [self.f2]
       self.f2.children = []
       self.f2.parent = self.f1
+      self.f2.parentEdge = connectingEdge
       return self.f1
     elif endVertexOuter == self.f2:
       self.f2.children = [self.f1]
       self.f1.children = []
       self.f1.parent = self.f2
+      self.f1.parentEdge = connectingEdge
       return self.f2
     else:
       raise ValueError("Unknown error when connecting dumbbell via edge.")

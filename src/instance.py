@@ -112,14 +112,18 @@ class Instance:
     for i in range(len(newPath) - 1):
       newPath[i].children = [newPath[i+1]]
       newPath[i+1].parent = newPath[i]
+      newPath[i+1].parentEdge = findConnectingEdge(newPath[i+1], newPath[i], self.blockingEdges + self.selectedEdges)
 
     newPath[0].parent = flower.parent
+    newPath[0].parentEdge = flower.parentEdge
     assert flower.parent is not None
     flower.parent.children.remove(flower)
     flower.parent.children.append(newPath[0])
 
     newPath[-1].children = flower.children
     flower.children[0].parent = newPath[-1]
+    assert flower.children[0].parentEdge is not None
+    # parentEdge should stay the same
 
     # For each of the inner flowers, set outerFlower to None
     for inner in flower.innerFlowers:
@@ -146,7 +150,8 @@ class Instance:
     self.dumbbells.remove(dumbbell)
 
     # Transform the dumbbell into a subtree.
-    subtree: Flower = dumbbell.makeIntoSubTree(edge)
+    connectingEdge = findConnectingEdge(dumbbell.f1, dumbbell.f2, self.selectedEdges)
+    subtree: Flower = dumbbell.makeIntoSubTree(edge, connectingEdge)
 
     # Connect this subtree to the flower
     flower.children.append(subtree)
@@ -202,6 +207,8 @@ class Instance:
     # Change the parent child to the new flower, and the children parents to the new flower.
     for child in children:
       child.parent = newFlower
+      assert child.parentEdge is not None
+      # parentEdge stays the same
     if W.parent != None:
       assert W.parent is not None
       W.parent.children.remove(W)
