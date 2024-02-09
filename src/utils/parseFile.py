@@ -14,7 +14,8 @@ def parseFileAndReturnInstance(fileName: str) -> Instance:
     for i in range(vertices):
       flower = Flower(None, None, [], [])
       flower.textRepr = str(i + 1)
-      result.trees.append(Tree(flower))
+      newTree = Tree(flower)
+      result.trees.append(newTree)
     
     for line in file:
       values = line.split()

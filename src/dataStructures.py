@@ -73,7 +73,7 @@ class Flower:
   outerFlower: Optional['Flower']
   innerFlowers: List['Flower']
   charge: float
-  edges: List[Edge] = [] # Only for flowers representing vertices
+  edges: List[Edge] # Only for flowers representing vertices
   textRepr: str = ""
 
   def __init__(self, parent: Optional['Flower'], parentEdge: Optional[Edge], children: List['Flower'], innerFlowers: List['Flower']) -> None:
@@ -83,6 +83,7 @@ class Flower:
     self.innerFlowers = innerFlowers
     self.charge = 0
     self.outerFlower = None
+    self.edges = []
 
   def __str__(self) -> str:
     return self.textRepr
