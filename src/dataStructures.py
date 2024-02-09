@@ -15,7 +15,7 @@ class Tree:
     return f"Tree rooted at {self.root}"
 
   def getNoVertexWithZeroCharge(self) -> Optional[Flower]:
-    return self.root.getNoVertexWithZeroCharge()
+    return self.root.getNoVertexWithZeroCharge(0)
   
   @staticmethod
   def isAlternatingPath(node: Flower) -> bool:
@@ -104,7 +104,6 @@ class Flower:
   def getTotalCharge(self) -> float:
     if self.outerFlower is None:
       return self.charge
-    
     return self.charge + self.outerFlower.getTotalCharge()
   
   def isInAlternatingPath(self) -> bool:
@@ -133,7 +132,7 @@ class Flower:
       raise ValueError("There is no path between selected flowers. One is not the predecessor of other.")
     
     assert self.parent is not None
-    return [self] + self.parent.getPathToPredecessor(self.parent)
+    return [self] + self.parent.getPathToPredecessor(flower)
   
   def getAllLowestLevelFlowers(self) -> List['Flower']:
     if len(self.innerFlowers) == 0:
@@ -165,11 +164,11 @@ class Flower:
 
     return result
   
-  def getNoVertexWithZeroCharge(self) -> Optional['Flower']:
-    if self.charge == 0 and len(self.innerFlowers) > 0:
+  def getNoVertexWithZeroCharge(self, level: int) -> Optional['Flower']:
+    if self.charge == 0 and len(self.innerFlowers) > 0 and level % 2 == 1: # Bubbles on even level can't get charge 0
       return self
     for child in self.children:
-      response = child.getNoVertexWithZeroCharge()
+      response = child.getNoVertexWithZeroCharge(level + 1)
       if response is not None:
         return response
       

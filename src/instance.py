@@ -23,7 +23,6 @@ class Instance:
     self.otherEdges = []
 
   def action(self) -> None:
-    print(self.dumbbells)
     # First move through the instance, find out if something has to be done, if yes, perform it
     # If some not-vertex bubble in some tree has charge 0, perform P1.
     for tree in self.trees:
@@ -135,7 +134,7 @@ class Instance:
       self.dumbbells.append(Dumbbell(dumbbellPath[i], dumbbellPath[i+1], findConnectingEdge(dumbbellPath[i], dumbbellPath[i+1], self.selectedEdges)))
       
   def P2(self, flower: Flower, dumbbell: Dumbbell, edge: Edge) -> None:
-    print(f"P2 on {flower} {dumbbell}")
+    print(f"P2 on {flower} {dumbbell} and edge {edge}")
     """
     Connects a dumbbell to a flower in some tree.
 
@@ -204,6 +203,7 @@ class Instance:
 
     # Now we have the new flower so we can create it.
     newFlower = Flower(W.parent, W.parentEdge, children, innerFlowers)
+    newFlower.textRepr = str(innerFlowers)
 
     # Change the parent child to the new flower, and the children parents to the new flower.
     for child in children:
@@ -219,7 +219,7 @@ class Instance:
 
     # Set outerFlower of all inner flowers.
     for flower in innerFlowers:
-      flower.outerFlower = flower
+      flower.outerFlower = newFlower
 
   def P4(self, edge: Edge) -> None:
     print(f"P4 on {edge}")
@@ -299,14 +299,13 @@ class Instance:
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
     if len(alternatingOuterFlowers) > 0:
-      subtrees: list[Flower] = Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[0], alternatingOuterFlowers) + Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[-1], alternatingOuterFlowers)
-      for subtree in subtrees:
+      for subtree in alternatingOuterFlowers:
         self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
 
     # Finally delete the trees so only dumbbells will be left.
     toRemoveTrees = []
     for tree in self.trees:
-      if tree.root == alternatingPathVertices[0] or tree.root == alternatingPathVertices[-1]:
+      if tree.root == stem1 or tree.root == stem2:
         toRemoveTrees.append(tree)
     for tree in toRemoveTrees:
         self.trees.remove(tree)
