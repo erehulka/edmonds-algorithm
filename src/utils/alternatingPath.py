@@ -51,10 +51,12 @@ def hasIntersection(l1: list, l2: list) -> bool:
 def getVerticesOnAlternatingPath(alternatingPath: list[Edge]) -> list[Flower]:
   result = []
   for e in alternatingPath:
-    if e.v1 not in result:
-      result.append(e.v1)
-    if e.v2 not in result:
-      result.append(e.v2)
+    outer1 = e.v1.getTotalOuterFlower()
+    outer2 = e.v2.getTotalOuterFlower()
+    if outer1 not in result:
+      result.append(outer1)
+    if outer2 not in result:
+      result.append(outer2)
 
   return result
 

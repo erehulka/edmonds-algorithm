@@ -155,6 +155,8 @@ class Flower:
     if self.depth() % 2 == 1:
       assert len(self.children) == 1
       assert self.children[0].parentEdge is not None
+      self.parent = None
+      self.children[0].parent = None
       return [Dumbbell(self, self.children[0], self.children[0].parentEdge)] + self.children[0].changeSubtreeIntoDumbbells()
     
     # Otherwise if I am in even depth

@@ -213,7 +213,6 @@ class Instance:
       assert W.parent is not None
       W.parent.children.remove(W)
       W.parent.children.append(newFlower)
-    newFlower.parent = W.parent
     newFlower.parentEdge = W.parentEdge
     
     # If this is a new root of the tree, change the root accordingly.
@@ -265,9 +264,6 @@ class Instance:
       for tree in toRemoveTrees:
         self.trees.remove(tree)
       return
-    
-    # Other special case - if we are connecting single vertex to alternating path, we will exchange selected and blocking edges and not create dumbbells
-    # TODO
 
     # Make this edge blocked, it should be other before
     edge.type = EdgeType.BLOCKED
@@ -300,7 +296,10 @@ class Instance:
     # First, make each pair from the path into dumbbells
     assert len(alternatingPathVertices) % 2 == 0
     for i in range(0, len(alternatingPathVertices), 2):
-      self.dumbbells.append(Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], alternatingPath[i]))
+      dumbbell = Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], alternatingPath[i])
+      self.dumbbells.append(dumbbell)
+      dumbbell.f1.parent = None
+      dumbbell.f2.parent = None
     
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
