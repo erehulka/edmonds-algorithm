@@ -309,8 +309,10 @@ class Instance:
 
     # Finally delete the trees so only dumbbells will be left.
     toRemoveTrees = []
+    stemOuter1 = stem1.getTotalOuterFlower()
+    stemOuter2 = stem2.getTotalOuterFlower()
     for tree in self.trees:
-      if tree.root == stem1 or tree.root == stem2:
+      if tree.root == stemOuter1 or tree.root == stemOuter2:
         toRemoveTrees.append(tree)
     for tree in toRemoveTrees:
         self.trees.remove(tree)
