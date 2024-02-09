@@ -22,44 +22,45 @@ class Instance:
     self.otherEdges = []
 
   def action(self) -> None:
-    # First move through the instance, find out if something has to be done, if yes, perform it
-    # If some not-vertex bubble in some tree has charge 0, perform P1.
-    for tree in self.trees:
-      flower = tree.getNoVertexWithZeroCharge()
-      if flower is not None:
-        self.P1(flower)
-        return
-     
-    for edge in self.otherEdges:
-      if edge.getCurrentCharge() >= edge.capacity:
-        outerFlower1 = edge.v1.getTotalOuterFlower()
-        outerFlower2 = edge.v2.getTotalOuterFlower()
-
-        # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
-        for dumbbell in self.dumbbells:
-          if dumbbell.containsFlower(outerFlower1):
-            # Meaning that the other flower is on even level
-            self.P2(outerFlower2, dumbbell, edge)
-            return
-          elif dumbbell.containsFlower(outerFlower2):
-            self.P2(outerFlower1, dumbbell, edge)
-            return
-          
-        # If some edge between flowers in one tree has been filled, perform P3.
-        if outerFlower1.getRoot() == outerFlower2.getRoot():
-          self.P3(edge)
-          return
-
-        # Otherwise perform P4
-        self.P4(edge)
-        return
-
-    # If nothing was changed, it is needed to find the epsilon value which can be applied to each outer flower.
+    # First change the epsilon, if epsilon is 0, some action has to be performed.
     epsilon: float = calculateEpsilon(self.trees, self.otherEdges, self.dumbbells)
 
-    # Change the charges
-    for tree in self.trees:
-      tree.root.changeChargeByEpsilon(0, epsilon)
+    if epsilon > 0:
+      # Change the charges
+      for tree in self.trees:
+        tree.root.changeChargeByEpsilon(0, epsilon)
+    else:
+      # Move through the instance, find out if something has to be done, if yes, perform it
+      # If some not-vertex bubble in some tree has charge 0, perform P1.
+      for tree in self.trees:
+        flower = tree.getNoVertexWithZeroCharge()
+        if flower is not None:
+          self.P1(flower)
+          return
+      
+      for edge in self.otherEdges:
+        if edge.getCurrentCharge() >= edge.capacity:
+          outerFlower1 = edge.v1.getTotalOuterFlower()
+          outerFlower2 = edge.v2.getTotalOuterFlower()
+
+          # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
+          for dumbbell in self.dumbbells:
+            if dumbbell.containsFlower(outerFlower1):
+              # Meaning that the other flower is on even level
+              self.P2(outerFlower2, dumbbell, edge)
+              return
+            elif dumbbell.containsFlower(outerFlower2):
+              self.P2(outerFlower1, dumbbell, edge)
+              return
+            
+          # If some edge between flowers in one tree has been filled, perform P3.
+          if outerFlower1.getRoot() == outerFlower2.getRoot() and outerFlower1.depth() % 2 == 0 and outerFlower2.depth() % 2 == 0:
+            self.P3(edge)
+            return
+
+          # Otherwise perform P4
+          self.P4(edge)
+          return    
 
   def run(self) -> None:
     # Repeat until all instances are dumbbells

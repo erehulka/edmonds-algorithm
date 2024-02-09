@@ -25,6 +25,6 @@ def calculateEpsilon(trees: list[Tree], otherEdges: list[Edge], dumbbells: list[
       if edgeEpsilon < epsilon:
         epsilon = edgeEpsilon
   
-  assert epsilon > 0 and epsilon < sys.float_info.max
+  assert epsilon < sys.float_info.max
 
   return epsilon
