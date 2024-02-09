@@ -2,7 +2,7 @@ from src.dataStructures import Edge, Flower
 from src.enums.edge import EdgeType
 
 
-def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: list[Flower], currentVertex: Flower, mustUseBlocked: bool) -> list[Edge]:
+def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: list[Flower], currentVertex: Flower, mustUseBlocked: bool, roots: list[Flower]) -> list[Edge]:
   """
   Finds alternating path (between L and M edges) from given vertex. If it needs to choose a elected edge, it has
   only one possibility, but for blocking it has multiple. Thus it tries both.
@@ -17,10 +17,10 @@ def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: lis
         nextVertex = edge.v1
         if nextVertex == currentVertex:
           nextVertex = edge.v2
-        if nextVertex in visitedVertices:
+        if nextVertex in visitedVertices or nextVertex.getRoot() not in roots:
           continue
         try:
-          return findAlternatingPath(end, pathSoFar + [edge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked)
+          return findAlternatingPath(end, pathSoFar + [edge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked, roots)
         except:
           pass
   else:
@@ -39,7 +39,7 @@ def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: lis
     if nextVertex in visitedVertices:
       raise ValueError("There is no edge to be chosen")
     
-    return findAlternatingPath(end, pathSoFar + [usedEdge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked)
+    return findAlternatingPath(end, pathSoFar + [usedEdge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked, roots)
 
   raise ValueError("Invalid Path")
 

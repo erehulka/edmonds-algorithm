@@ -273,7 +273,7 @@ class Instance:
     # Find alternating path between the stem of T1 and T2 through the edge
     stem1 = edge.v1.getRoot().getStem()
     stem2 = edge.v2.getRoot().getStem()
-    alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1])
+    alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1], roots=[edge.v1.getRoot(), edge.v2.getRoot()])
     alternatingPathVertices = getVerticesOnAlternatingPath(alternatingPath)
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
     alternatingOuterFlowers = findSubtrees(alternatingPath, self.blockingEdges + self.selectedEdges)
