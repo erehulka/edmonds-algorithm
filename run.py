@@ -7,7 +7,7 @@ def run(file: str) -> None:
   instance = parseFileAndReturnInstance(file)
   instance.run()
 
-  for edge in instance._selectedEdges:
+  for edge in instance.selectedEdges:
     print(edge.textRepr)
 
 if __name__ == '__main__':

@@ -1,6 +1,9 @@
 from re import A
 from typing import List
 from src.dataStructures import Dumbbell, Edge, Flower, Tree
+from src.enums.edge import EdgeType
+from src.utils.alternatingPath import findAlternatingPath
+from src.utils.edge import findConnectingEdge
 from src.utils.epsilon import calculateEpsilon
 from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
 
@@ -46,9 +49,11 @@ class Instance:
         # If some edge between flowers in one tree has been filled, perform P3.
         if outerFlower1.getRoot() == outerFlower2.getRoot():
           self.P3(edge)
+          return
 
         # Otherwise perform P4
         self.P4(edge)
+        return
 
     # If nothing was changed, it is needed to find the epsilon value which can be applied to each outer flower.
     epsilon: float = calculateEpsilon(self.trees, self.otherEdges, self.dumbbells)
@@ -63,6 +68,7 @@ class Instance:
       self.action()
     
   def P1(self, flower: Flower) -> None:
+    print(f"P1 on {flower.getAllLowestLevelFlowers()}")
     """
     Performs an action, where for a flower on odd level the charge fell to 0. The steps are mentioned below.
 
@@ -74,7 +80,6 @@ class Instance:
     Kt a Kt+1 a K1,K2r+1 sa dajú odobrať z L, lebo v novom strome bude jedna z nich na nepárnej úrovni a druhá 
     v činke, takže pri najbližšej operácii posun prestanú byť plné.
     """
-
     if len(flower.children) != 1:
       raise ValueError(f"P1: The flower does not have exactly one child. Real number: {len(flower.children)}")
     
@@ -90,14 +95,17 @@ class Instance:
     # NOTE, the index i actually represents the inner flower K{i+1}, since we are indexing from one.
 
     # Get the path with the odd length. It should be from K{i+1} to K1.
-    # If i+1 is odd (i is even), then the path is K{i+1}, K{i}, ..., K1
-    # If i+1 is even, then it is K{i+1}, K{i+2}, ..., Kt, K1 where Kt is the last inner flower
+    # If i+1 is odd (i is even), then the path is K{i+1}, K{i}, ..., K1 and the path of new dumbbells is K{i+2}, ..., K{t}
+    # If i+1 is even, then it is K{i+1}, K{i+2}, ..., Kt, K1 where Kt is the last inner flower and the path of dumbbells is K2, ..., Ki
     newPath: List[Flower]
+    dumbbellPath: List[Flower]
     if flowerIndexToParent % 2 == 0:
-      newPath = flower.innerFlowers[0:flowerIndexToParent+1]
+      newPath = flower.innerFlowers[:flowerIndexToParent+1]
       newPath.reverse()
+      dumbbellPath = flower.innerFlowers[flowerIndexToParent+2:] if flowerIndexToParent+1 == len(flower.innerFlowers) else []
     else:
       newPath = flower.innerFlowers[flowerIndexToParent:] + [flower.innerFlowers[0]]
+      dumbbellPath = flower.innerFlowers[1:flowerIndexToParent]
 
     # Change the odd path for the flower in the tree, change the child of the parent to Kt and
     # change the parent of the child to K1
@@ -117,9 +125,12 @@ class Instance:
     for inner in flower.innerFlowers:
       inner.outerFlower = None
 
-    # Find the dumbbells on the even path, and TODO
+    # Find the dumbbells on the even path, and put them into new dumbbells
+    for i in range(0, len(dumbbellPath), 2):
+      self.dumbbells.append(Dumbbell(dumbbellPath[i], dumbbellPath[i+1], findConnectingEdge(dumbbellPath[i], dumbbellPath[i+1], self.selectedEdges)))
       
   def P2(self, flower: Flower, dumbbell: Dumbbell, edge: Edge) -> None:
+    print(f"P2 on {flower} {dumbbell}")
     """
     Connects a dumbbell to a flower in some tree.
 
@@ -128,6 +139,8 @@ class Instance:
     príslušnému stromu tak, že K (na párnej úrovni) bude mať syna H1 (na nepárnej úrovni) a ten bude mať 
     jedného syna H2 (na párnej úrovni).
     """
+
+    assert flower.depth() % 2 == 0
 
     # Remove the dumbbell from dumbbells.
     self.dumbbells.remove(dumbbell)
@@ -138,17 +151,25 @@ class Instance:
     # Connect this subtree to the flower
     flower.children.append(subtree)
     subtree.parent = flower
+    subtree.parentEdge = edge
 
     # Add the edge to blocking
     self.blockingEdges.append(edge)
+    self.otherEdges.remove(edge)
+    edge.type = EdgeType.BLOCKED
 
   def P3(self, edge: Edge) -> None:
+    print(f"P3 on {edge}")
     """
     Naplnila sa hrana spájajúca kvety K a H v jednom strome. Zjavne K aj H sú na párnej úrovni. Nech W je LCA 
     K a H. Keďže W má aspoň 2 synov, musí byť tiež na párnej úrovni. Nech K, K1, ... K2k+1, W a H, H1, ... H2r+1, W
     sú cesty v strome. Z parity vrcholov vyplýva, že ich môžeme obaliť novou bublinou a dostaneme kvet Z na párnej
     úrovni, ktorého stopka je stopka W. Synovia Z budú všetci synovia zahrnutých kvetov. Títo ostanú na nepárnej úrovni.
     """
+
+    edge.type = EdgeType.BLOCKED
+    self.blockingEdges.append(edge)
+    self.otherEdges.remove(edge)
 
     K = edge.v1.getTotalOuterFlower()
     H = edge.v2.getTotalOuterFlower()
@@ -161,7 +182,7 @@ class Instance:
 
     # Get the paths from K to W and H to W and reverse one of them.
     KtoW = K.getPathToPredecessor(W)
-    HtoW = K.getPathToPredecessor(W)
+    HtoW = H.getPathToPredecessor(W)
     WtoH: List[Flower] = HtoW
     WtoH.reverse()
     KtoW = KtoW[:-1]
@@ -176,21 +197,24 @@ class Instance:
     children = list(set(children))
 
     # Now we have the new flower so we can create it.
-    flower = Flower(W.parent, W.parentEdge, children, innerFlowers)
+    newFlower = Flower(W.parent, W.parentEdge, children, innerFlowers)
 
     # Change the parent child to the new flower, and the children parents to the new flower.
     for child in children:
-      child.parent = flower
+      child.parent = newFlower
     if W.parent != None:
       assert W.parent is not None
       W.parent.children.remove(W)
-      W.parent.children.append(flower)
+      W.parent.children.append(newFlower)
+    newFlower.parent = W.parent
+    newFlower.parentEdge = W.parentEdge
 
     # Set outerFlower of all inner flowers.
     for flower in innerFlowers:
       flower.outerFlower = flower
 
   def P4(self, edge: Edge) -> None:
+    print(f"P4 on {edge}")
     """
     Naplnila sa hrana e spájajúca kvety K a H v 2 rôznych stromoch T1 a T2. Toto je vlastne jadro
     celého algoritmu, v ktorom zväčšíme párovanie M. Urobíme to tak, že nájdeme alternujúcu cestu, 
@@ -214,8 +238,29 @@ class Instance:
     vrcholu v z Lemy 3.13. Rovnako vytvoria činku kvety K a H. Zvyšné časti stromov tvoria činky prirodzeným spôsobom.
     """
 
+    # Special case - if both flowers are representing vertices and are not in trees, just add selected edge and add to dumbbells
+    if edge.v1.outerFlower == None and edge.v2.outerFlower == None and edge.v1.parent is None and len(edge.v1.children) == 0 and edge.v2.parent is None and len(edge.v2.children) == 0:
+      edge.type = EdgeType.SELECTED
+      self.otherEdges.remove(edge)
+      self.selectedEdges.append(edge)
+      self.dumbbells.append(Dumbbell(edge.v1, edge.v2, edge))
+      toRemoveTrees: list[Tree] = []
+      for tree in self.trees:
+        if tree.root == edge.v1 or tree.root == edge.v2:
+          toRemoveTrees.append(tree)
+      for tree in toRemoveTrees:
+        self.trees.remove(tree)
+      return
+
+    # Make this edge blocked, it should be other before
+    edge.type = EdgeType.BLOCKED
+    self.otherEdges.remove(edge)
+    self.blockingEdges.append(edge)
+
     # Find alternating path between the stem of T1 and T2 through the edge
-    alternatingPath: List[Edge] = [] # TODO
+    stem1 = edge.v1.getRoot().getStem()
+    stem2 = edge.v2.getRoot().getStem()
+    alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[])
     
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
     alternatingOuterFlowers: List[Flower] = []
@@ -237,9 +282,11 @@ class Instance:
       if addToM:
         self.blockingEdges.remove(edge)
         self.selectedEdges.append(edge)
+        edge.type = EdgeType.SELECTED
       else:
         self.selectedEdges.remove(edge)
         self.blockingEdges.append(edge)
+        edge.type = EdgeType.BLOCKED
       addToM = not addToM
 
     # Destructurize the tree into dumbbells
@@ -255,6 +302,9 @@ class Instance:
       self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
 
     # Finally delete the trees so only dumbbells will be left.
+    toRemoveTrees = []
     for tree in self.trees:
       if tree.root == alternatingOuterFlowers[0] or tree.root == alternatingOuterFlowers[-1]:
+        toRemoveTrees.append(tree)
+    for tree in toRemoveTrees:
         self.trees.remove(tree)

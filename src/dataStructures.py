@@ -2,12 +2,17 @@ from __future__ import annotations
 import sys
 from typing import List, Optional
 
+from src.enums.edge import EdgeType
+
 
 class Tree:
   root: Flower
 
   def __init__(self, root: Flower):
     self.root = root
+
+  def __repr__(self) -> str:
+    return f"Tree rooted at {self.root}"
 
   def getNoVertexWithZeroCharge(self) -> Optional[Flower]:
     return self.root.getNoVertexWithZeroCharge()
@@ -68,6 +73,8 @@ class Flower:
   outerFlower: Optional['Flower']
   innerFlowers: List['Flower']
   charge: float
+  edges: List[Edge] = [] # Only for flowers representing vertices
+  textRepr: str = ""
 
   def __init__(self, parent: Optional['Flower'], parentEdge: Optional[Edge], children: List['Flower'], innerFlowers: List['Flower']) -> None:
     self.parent = parent
@@ -76,6 +83,12 @@ class Flower:
     self.innerFlowers = innerFlowers
     self.charge = 0
     self.outerFlower = None
+
+  def __str__(self) -> str:
+    return self.textRepr
+  
+  def __repr__(self) -> str:
+    return self.textRepr
 
   def isOnlyVertex(self) -> bool:
     return len(self.innerFlowers) == 0
@@ -161,7 +174,7 @@ class Flower:
       if childEpsilon < epsilon:
         epsilon = childEpsilon
 
-    if level % 2 == 1 and self.charge < epsilon:
+    if level % 2 == 1 and self.charge < epsilon and len(self.innerFlowers) > 0: # Blue bubbles can have negative charge
       epsilon = self.charge
     
     return epsilon
@@ -175,30 +188,47 @@ class Flower:
     for child in self.children:
       child.changeChargeByEpsilon(level + 1, epsilon)
 
+  def getStem(self) -> Flower:
+    if len(self.innerFlowers) == 0:
+      return self
+    
+    return self.innerFlowers[0].getStem()
+
 
 class Edge:
   v1: Flower
   v2: Flower
   capacity: float
   textRepr: str
+  type: EdgeType
 
-  def __init__(self, v1: Flower, v2: Flower, capacity: float, textRepr: str):
+  def __init__(self, v1: Flower, v2: Flower, capacity: float, textRepr: str, type: EdgeType):
     self.v1 = v1
     self.v2 = v2
     self.capacity = capacity
     self.textRepr = textRepr
+    self.type = type
 
   def getCurrentCharge(self) -> float:
     return self.v1.getTotalCharge() + self.v2.getTotalCharge()
   
   def getEpsilon(self) -> float:
     return self.capacity - self.getCurrentCharge()
+  
+  def __str__(self) -> str:
+    return self.textRepr
+  
+  def __repr__(self) -> str:
+    return self.textRepr
 
 
 class Dumbbell:
   f1: Flower
   f2: Flower
   edge: Edge
+
+  def __repr__(self) -> str:
+    return f"Dumbbell: {self.f1} {self.f2}"
 
   def __init__(self, f1: Flower, f2: Flower, edge: Edge):
     self.f1 = f1
