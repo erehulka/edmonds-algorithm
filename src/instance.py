@@ -2,7 +2,7 @@ from re import A
 from typing import List
 from src.dataStructures import Dumbbell, Edge, Flower, Tree
 from src.enums.edge import EdgeType
-from src.utils.alternatingPath import findAlternatingPath
+from src.utils.alternatingPath import findAlternatingPath, findSubtrees, getVerticesOnAlternatingPath
 from src.utils.edge import findConnectingEdge
 from src.utils.epsilon import calculateEpsilon
 from src.utils.typeOfFlower import isInDumbbell, isInTreeOnEvenDepth
@@ -23,6 +23,7 @@ class Instance:
     self.otherEdges = []
 
   def action(self) -> None:
+    print(self.dumbbells)
     # First move through the instance, find out if something has to be done, if yes, perform it
     # If some not-vertex bubble in some tree has charge 0, perform P1.
     for tree in self.trees:
@@ -258,6 +259,9 @@ class Instance:
       for tree in toRemoveTrees:
         self.trees.remove(tree)
       return
+    
+    # Other special case - if we are connecting single vertex to alternating path, we will exchange selected and blocking edges and not create dumbbells
+    # TODO
 
     # Make this edge blocked, it should be other before
     edge.type = EdgeType.BLOCKED
@@ -268,19 +272,9 @@ class Instance:
     stem1 = edge.v1.getRoot().getStem()
     stem2 = edge.v2.getRoot().getStem()
     alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1])
-    
+    alternatingPathVertices = getVerticesOnAlternatingPath(alternatingPath)
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
-    alternatingOuterFlowers: List[Flower] = []
-    alternatingOuterFlowersEdges: List[Edge] = []
-    for edge in alternatingPath:
-      outerFlower1 = edge.v1.getTotalOuterFlower()
-      outerFlower2 = edge.v2.getTotalOuterFlower()
-      if outerFlower1 not in alternatingOuterFlowers:
-        alternatingOuterFlowers.append(outerFlower1)
-      if outerFlower2 not in alternatingOuterFlowers:
-        alternatingOuterFlowers.append(outerFlower2)
-      if outerFlower1 != outerFlower2:
-        alternatingOuterFlowersEdges.append(edge)
+    alternatingOuterFlowers = findSubtrees(alternatingPath, self.blockingEdges + self.selectedEdges)
 
     # This path has first edge from L and last from L as well.
     # Exchange these edges between L and M.
@@ -298,20 +292,21 @@ class Instance:
 
     # Destructurize the tree into dumbbells
     # First, make each pair from the path into dumbbells
-    assert len(alternatingOuterFlowers) % 2 == 0
-    for i in range(0, len(alternatingOuterFlowers), 2):
-      self.dumbbells.append(Dumbbell(alternatingOuterFlowers[i], alternatingOuterFlowers[i+1], alternatingOuterFlowersEdges[i]))
+    assert len(alternatingPathVertices) % 2 == 0
+    for i in range(0, len(alternatingPathVertices), 2):
+      self.dumbbells.append(Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], alternatingPath[i]))
     
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
-    subtrees: list[Flower] = Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[0], alternatingOuterFlowers) + Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[-1], alternatingOuterFlowers)
-    for subtree in subtrees:
-      self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
+    if len(alternatingOuterFlowers) > 0:
+      subtrees: list[Flower] = Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[0], alternatingOuterFlowers) + Tree.getSubtreesNotInAlternatingPath(alternatingOuterFlowers[-1], alternatingOuterFlowers)
+      for subtree in subtrees:
+        self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
 
     # Finally delete the trees so only dumbbells will be left.
     toRemoveTrees = []
     for tree in self.trees:
-      if tree.root == alternatingOuterFlowers[0] or tree.root == alternatingOuterFlowers[-1]:
+      if tree.root == alternatingPathVertices[0] or tree.root == alternatingPathVertices[-1]:
         toRemoveTrees.append(tree)
     for tree in toRemoveTrees:
         self.trees.remove(tree)

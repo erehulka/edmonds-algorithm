@@ -42,3 +42,39 @@ def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: lis
     return findAlternatingPath(end, pathSoFar + [usedEdge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked)
 
   raise ValueError("Invalid Path")
+
+def hasIntersection(l1: list, l2: list) -> bool:
+  set1 = set(l1)
+  set2 = set(l2)
+  return len(set1.intersection(set2)) > 0
+
+def getVerticesOnAlternatingPath(alternatingPath: list[Edge]) -> list[Flower]:
+  result = []
+  for e in alternatingPath:
+    if e.v1 not in result:
+      result.append(e.v1)
+    if e.v2 not in result:
+      result.append(e.v2)
+
+  return result
+
+def findSubtrees(alternatingPath: list[Edge], edges: list[Edge]) -> list[Flower]:
+  # Go through the alternating path, find the outerFlower and add the children, which are not in alternatingPath
+  visitedFlowers: list[Flower] = []
+  subtrees: list[Flower] = []
+
+  alternatingPathVertices = getVerticesOnAlternatingPath(alternatingPath)
+
+  for edge in alternatingPath:
+    for fl in [edge.v1, edge.v2]:
+      outerFlower = fl.getTotalOuterFlower()
+      if outerFlower in visitedFlowers:
+        continue
+      visitedFlowers.append(outerFlower)
+      for child in outerFlower.children:
+        # If child is actually on the alternating path, continue
+        if hasIntersection(alternatingPathVertices, child.getAllLowestLevelFlowers()):
+          continue
+        subtrees.append(child)
+
+  return subtrees

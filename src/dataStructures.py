@@ -16,6 +16,13 @@ class Tree:
 
   def getNoVertexWithZeroCharge(self) -> Optional[Flower]:
     return self.root.getNoVertexWithZeroCharge()
+  
+  @staticmethod
+  def isAlternatingPath(node: Flower) -> bool:
+    while len(node.children) != 0:
+      if len(node.children) > 1: return False
+      node = node.children[0]
+    return True
 
   @staticmethod
   def findLCA(K: Flower, H: Flower) -> Flower:
@@ -99,6 +106,12 @@ class Flower:
       return self.charge
     
     return self.charge + self.outerFlower.getTotalCharge()
+  
+  def isInAlternatingPath(self) -> bool:
+    if self.parent is not None:
+      return self.parent.isInAlternatingPath()
+    
+    return Tree.isAlternatingPath(self)
   
   def getTotalOuterFlower(self) -> 'Flower':
     if self.outerFlower is None:
