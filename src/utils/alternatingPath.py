@@ -17,7 +17,7 @@ def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: lis
         nextVertex = edge.v1
         if nextVertex == currentVertex:
           nextVertex = edge.v2
-        if nextVertex in visitedVertices or nextVertex.getRoot() not in roots:
+        if nextVertex in visitedVertices or nextVertex.getTotalOuterFlower().getRoot() not in roots:
           continue
         try:
           return findAlternatingPath(end, pathSoFar + [edge], visitedVertices + [nextVertex], nextVertex, not mustUseBlocked, roots)
