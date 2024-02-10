@@ -51,11 +51,11 @@ class Instance:
 
           # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
           for dumbbell in self.dumbbells:
-            if dumbbell.containsFlower(outerFlower1):
+            if dumbbell.containsFlower(outerFlower1) and isInTreeOnEvenDepth(outerFlower2, treeRoots):
               # Meaning that the other flower is on even level
               self.P2(outerFlower2, dumbbell, edge)
               return
-            elif dumbbell.containsFlower(outerFlower2):
+            elif dumbbell.containsFlower(outerFlower2) and isInTreeOnEvenDepth(outerFlower1, treeRoots):
               self.P2(outerFlower1, dumbbell, edge)
               return
             
@@ -65,8 +65,9 @@ class Instance:
             return
 
           # Otherwise perform P4
-          self.P4(edge)
-          return    
+          if isInTreeOnEvenDepth(outerFlower1, treeRoots) and isInTreeOnEvenDepth(outerFlower2, treeRoots):
+            self.P4(edge)
+            return    
 
   def run(self) -> None:
     # Repeat until all instances are dumbbells
