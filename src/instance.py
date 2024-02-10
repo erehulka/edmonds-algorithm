@@ -102,7 +102,7 @@ class Instance:
     if flowerIndexToParent % 2 == 0:
       newPath = flower.innerFlowers[:flowerIndexToParent+1]
       newPath.reverse()
-      dumbbellPath = flower.innerFlowers[flowerIndexToParent+2:] if flowerIndexToParent+1 == len(flower.innerFlowers) else []
+      dumbbellPath = flower.innerFlowers[flowerIndexToParent+1:]
     else:
       newPath = flower.innerFlowers[flowerIndexToParent:] + [flower.innerFlowers[0]]
       dumbbellPath = flower.innerFlowers[1:flowerIndexToParent]
@@ -133,6 +133,18 @@ class Instance:
     for i in range(0, len(dumbbellPath), 2):
       self.dumbbells.append(Dumbbell(dumbbellPath[i], dumbbellPath[i+1], findConnectingEdge(dumbbellPath[i], dumbbellPath[i+1], self.selectedEdges)))
       
+    # Unblock the two connecting edges to a new dumbbell
+    if len(dumbbellPath) > 0:
+      e1 = findConnectingEdge(dumbbellPath[0], newPath[-1], self.blockingEdges)
+      e1.type = EdgeType.OTHER
+      self.blockingEdges.remove(e1)
+      self.otherEdges.append(e1)
+
+      e2 = findConnectingEdge(dumbbellPath[-1], newPath[0], self.blockingEdges)
+      e2.type = EdgeType.OTHER
+      self.blockingEdges.remove(e2)
+      self.otherEdges.append(e2)
+
   def P2(self, flower: Flower, dumbbell: Dumbbell, edge: Edge) -> None:
     print(f"P2 on {flower} {dumbbell} and edge {edge}")
     """
