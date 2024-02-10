@@ -135,12 +135,12 @@ class Instance:
       
     # Unblock the two connecting edges to a new dumbbell
     if len(dumbbellPath) > 0:
-      e1 = findConnectingEdge(dumbbellPath[0], newPath[-1], self.blockingEdges)
+      e1 = findConnectingEdge(dumbbellPath[0], newPath[0], self.blockingEdges)
       e1.type = EdgeType.OTHER
       self.blockingEdges.remove(e1)
       self.otherEdges.append(e1)
 
-      e2 = findConnectingEdge(dumbbellPath[-1], newPath[0], self.blockingEdges)
+      e2 = findConnectingEdge(dumbbellPath[-1], newPath[-1], self.blockingEdges)
       e2.type = EdgeType.OTHER
       self.blockingEdges.remove(e2)
       self.otherEdges.append(e2)
