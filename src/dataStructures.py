@@ -101,10 +101,12 @@ class Flower:
   def isOnlyVertex(self) -> bool:
     return len(self.innerFlowers) == 0
   
-  def getTotalCharge(self) -> float:
+  def getTotalCharge(self, otherVertex: Flower) -> float:
+    if otherVertex in self.getAllLowestLevelFlowers():
+      return 0
     if self.outerFlower is None:
       return self.charge
-    return self.charge + self.outerFlower.getTotalCharge()
+    return self.charge + self.outerFlower.getTotalCharge(otherVertex)
   
   def isInAlternatingPath(self) -> bool:
     if self.parent is not None:
@@ -227,7 +229,7 @@ class Edge:
     self.type = type
 
   def getCurrentCharge(self) -> float:
-    return self.v1.getTotalCharge() + self.v2.getTotalCharge()
+    return self.v1.getTotalCharge(self.v2) + self.v2.getTotalCharge(self.v1)
   
   def getEpsilon(self) -> float:
     return self.capacity - self.getCurrentCharge()
