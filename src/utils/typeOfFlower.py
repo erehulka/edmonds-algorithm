@@ -9,9 +9,9 @@ def isInDumbbell(flower: Flower, dumbbells: list[Dumbbell]) -> bool:
     
   return False
 
-def isInTreeOnEvenDepth(flower: Flower, trees: list[Tree]) -> bool:
+def isInTreeOnEvenDepth(flower: Flower, treeRoots: list[Flower]) -> bool:
   outerFlower = flower.getTotalOuterFlower()
-  for tree in trees:
-    if outerFlower in tree.root.getAllSuccessors():
-      return outerFlower.depth() % 2 == 0
-  return False
+  if outerFlower.getRoot() not in treeRoots:
+    return False
+
+  return outerFlower.depth() % 2 == 0

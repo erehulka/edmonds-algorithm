@@ -5,6 +5,7 @@ from src.enums.edge import EdgeType
 from src.utils.alternatingPath import findAlternatingPath, findSubtrees, getVerticesOnAlternatingPath
 from src.utils.edge import findConnectingEdge
 from src.utils.epsilon import calculateEpsilon
+from src.utils.typeOfFlower import isInTreeOnEvenDepth
 
 
 class Instance:
@@ -24,11 +25,12 @@ class Instance:
   def action(self) -> None:
     # First change the epsilon, if epsilon is 0, some action has to be performed.
     epsilon: float = calculateEpsilon(self.trees, self.otherEdges, self.dumbbells)
+    treeRoots = list(map(lambda x: x.root, self.trees))
 
     if epsilon > 0:
       # Change the charges
-      for tree in self.trees:
-        tree.root.changeChargeByEpsilon(0, epsilon)
+      for root in treeRoots:
+        root.changeChargeByEpsilon(0, epsilon)
     else:
       # Move through the instance, find out if something has to be done, if yes, perform it
       # If some not-vertex bubble in some tree has charge 0, perform P1.
@@ -42,6 +44,10 @@ class Instance:
         if edge.getCurrentCharge() >= edge.capacity:
           outerFlower1 = edge.v1.getTotalOuterFlower()
           outerFlower2 = edge.v2.getTotalOuterFlower()
+
+          # If at least one of the flowers is not in a tree on even level, skip this action and try again
+          if not isInTreeOnEvenDepth(outerFlower1, treeRoots) and not isInTreeOnEvenDepth(outerFlower2, treeRoots):
+            continue
 
           # If some edge is full between some bubble on an even level and a dumbbell, perform P2.
           for dumbbell in self.dumbbells:
