@@ -132,6 +132,8 @@ class Flower:
       raise ValueError("There is no path between selected flowers. One is not the predecessor of other.")
     
     assert self.parent is not None
+    assert self.parentEdge is not None
+    assert self.parentEdge.type in [EdgeType.BLOCKED, EdgeType.SELECTED]
     return [self] + self.parent.getPathToPredecessor(flower)
   
   def getAllLowestLevelFlowers(self) -> List['Flower']:
@@ -276,3 +278,14 @@ class Dumbbell:
     
   def containsFlower(self, flower: Flower) -> bool:
     return self.f1 == flower or self.f2 == flower
+  
+  def changeStemsInInner(self) -> None:
+    for i in range(len(self.f1.innerFlowers)):
+      if self.edge.v1 in self.f1.innerFlowers[i].getAllLowestLevelFlowers() or self.edge.v2 in self.f1.innerFlowers[i].getAllLowestLevelFlowers():
+        self.f1.innerFlowers = self.f1.innerFlowers[i:] + self.f1.innerFlowers[:i]
+        break
+
+    for i in range(len(self.f2.innerFlowers)):
+      if self.edge.v1 in self.f2.innerFlowers[i].getAllLowestLevelFlowers() or self.edge.v2 in self.f2.innerFlowers[i].getAllLowestLevelFlowers():
+        self.f2.innerFlowers = self.f2.innerFlowers[i:] + self.f2.innerFlowers[:i]
+        break

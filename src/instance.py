@@ -257,6 +257,7 @@ class Instance:
       edge.type = EdgeType.SELECTED
       self.otherEdges.remove(edge)
       self.selectedEdges.append(edge)
+      edge.type = EdgeType.SELECTED
       self.dumbbells.append(Dumbbell(edge.v1, edge.v2, edge))
       toRemoveTrees: list[Tree] = []
       for tree in self.trees:
@@ -297,7 +298,11 @@ class Instance:
     # First, make each pair from the path into dumbbells
     assert len(alternatingPathVertices) % 2 == 0
     for i in range(0, len(alternatingPathVertices), 2):
-      dumbbell = Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], alternatingPath[i])
+      dumbbell = Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], findConnectingEdge(alternatingPathVertices[i], alternatingPathVertices[i+1], self.selectedEdges))
+      
+      # Change the stems to new connecting vertices.
+      dumbbell.changeStemsInInner()
+
       self.dumbbells.append(dumbbell)
       dumbbell.f1.parent = None
       dumbbell.f2.parent = None
