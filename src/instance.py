@@ -90,6 +90,8 @@ class Instance:
     if len(flower.children) != 1:
       raise ValueError(f"P1: The flower does not have exactly one child. Real number: {len(flower.children)}")
     
+    assert flower.outerFlower is None
+    
     # Find out from which inner flower Kt the edge goes to the parent. Get index.
     flowerIndexToParent = 0
     assert flower.parentEdge is not None
@@ -98,6 +100,9 @@ class Instance:
       if flower.parentEdge.v1 in lowLevelFlowers or flower.parentEdge.v2 in lowLevelFlowers:
         break
       flowerIndexToParent += 1
+
+    if flowerIndexToParent >= len(flower.innerFlowers):
+      raise ValueError("Parent edge not found")
 
     # NOTE, the index i actually represents the inner flower K{i+1}, since we are indexing from one.
 
@@ -169,8 +174,7 @@ class Instance:
     self.dumbbells.remove(dumbbell)
 
     # Transform the dumbbell into a subtree.
-    connectingEdge = findConnectingEdge(dumbbell.f1, dumbbell.f2, self.selectedEdges)
-    subtree: Flower = dumbbell.makeIntoSubTree(edge, connectingEdge)
+    subtree: Flower = dumbbell.makeIntoSubTree(edge)
 
     # Connect this subtree to the flower
     flower.children.append(subtree)
@@ -242,8 +246,9 @@ class Instance:
           tree.root = newFlower
           break
 
-    # Set outerFlower of all inner flowers.
+    # Set outerFlower of all inner flowers and delete children
     for flower in innerFlowers:
+      flower.children = []
       flower.outerFlower = newFlower
 
   def P4(self, edge: Edge) -> None:
@@ -323,14 +328,24 @@ class Instance:
       dumbbell.changeStemsInInner()
 
       self.dumbbells.append(dumbbell)
+
+      # Remove parent and children
       dumbbell.f1.parent = None
       dumbbell.f2.parent = None
+      dumbbell.f1.children = []
+      dumbbell.f2.children = []
     
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
     if len(alternatingOuterFlowers) > 0:
       for subtree in alternatingOuterFlowers:
-        self.dumbbells.extend(subtree.changeSubtreeIntoDumbbells())
+        dumbbells = subtree.changeSubtreeIntoDumbbells()
+        for db in dumbbells:
+          db.f1.parent = None
+          db.f2.parent = None
+          db.f1.children = []
+          db.f2.children = []
+        self.dumbbells.extend(dumbbells)
 
     # Finally delete the trees so only dumbbells will be left.
     toRemoveTrees = []

@@ -35,26 +35,26 @@ class Tree:
 
     # Make sure node1 is deeper
     if depth2 > depth1:
-        node1, node2 = node2, node1
-        depth1, depth2 = depth2, depth1
+      node1, node2 = node2, node1
+      depth1, depth2 = depth2, depth1
 
     assert node1 is not None
     assert node2 is not None
     # Move node1 to the same depth as node2
     while depth1 > depth2:
-        assert node1.parent is not None
-        node1 = node1.parent
-        depth1 -= 1
+      assert node1.parent is not None
+      node1 = node1.parent
+      depth1 -= 1
 
     # Move both nodes up until they meet
     while node1 != node2:
-        assert node1 is not None
-        assert node2 is not None
-        node1 = node1.parent
-        node2 = node2.parent
+      assert node1 is not None
+      assert node2 is not None
+      node1 = node1.parent
+      node2 = node2.parent
 
     if node1 is None:
-       raise ValueError("FAIL when finding LCA! Flowers may not be in the same tree.")
+      raise ValueError("FAIL when finding LCA! Flowers may not be in the same tree.")
 
     return node1
   
@@ -261,7 +261,7 @@ class Dumbbell:
     self.f2 = f2
     self.edge = edge
 
-  def makeIntoSubTree(self, edge: Edge, connectingEdge: Edge) -> Flower:
+  def makeIntoSubTree(self, edge: Edge) -> Flower:
     # Find out which edge end is actually in the dumbbell.
     endVertex: Flower = edge.v1
     endVertexOuter: Flower = endVertex.getTotalOuterFlower()
@@ -274,13 +274,13 @@ class Dumbbell:
       self.f1.children = [self.f2]
       self.f2.children = []
       self.f2.parent = self.f1
-      self.f2.parentEdge = connectingEdge
+      self.f2.parentEdge = self.edge
       return self.f1
     elif endVertexOuter == self.f2:
       self.f2.children = [self.f1]
       self.f1.children = []
       self.f1.parent = self.f2
-      self.f1.parentEdge = connectingEdge
+      self.f1.parentEdge = self.edge
       return self.f2
     else:
       raise ValueError("Unknown error when connecting dumbbell via edge.")
