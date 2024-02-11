@@ -1,5 +1,6 @@
 from src.dataStructures import Edge, Flower
 from src.enums.edge import EdgeType
+from src.utils.edge import findConnectingEdge
 
 
 def findAlternatingPath(end: Flower, pathSoFar: list[Edge], visitedVertices: list[Flower], currentVertex: Flower, mustUseBlocked: bool, roots: list[Flower]) -> tuple[list[Edge], list[Flower]]:
@@ -57,9 +58,11 @@ def getVerticesOnAlternatingPath(alternatingPathOuterVertices: list[Flower]) -> 
 
   return result
 
-def findSubtrees(alternatingPathOuterVertices: list[Flower]) -> list[Flower]:
+def findSubtrees(alternatingPathOuterVertices: list[Flower], blockedEdges: list[Edge]) -> tuple[list[Flower], list[Edge]]:
   # Go through the alternating path, find the outerFlower and add the children, which are not in alternatingPath
+  # Returns also a list of edges, which must be made unblocked.
   subtrees: list[Flower] = []
+  connectingEdges: list[Edge] = []
 
   for fl in alternatingPathOuterVertices:
     for child in fl.children:
@@ -68,4 +71,7 @@ def findSubtrees(alternatingPathOuterVertices: list[Flower]) -> list[Flower]:
       assert child not in subtrees
       subtrees.append(child)
 
-  return subtrees
+      edgeToBeUnblocked = findConnectingEdge(fl, child, blockedEdges)
+      connectingEdges.append(edgeToBeUnblocked)
+
+  return (subtrees, connectingEdges)

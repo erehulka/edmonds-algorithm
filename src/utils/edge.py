@@ -2,6 +2,7 @@ from src.dataStructures import Edge, Flower
 
 
 def findConnectingEdge(f1: Flower, f2: Flower, edges: list[Edge]) -> Edge:
+  print("FINDING", f1, f2)
   allInner1 = f1.getAllLowestLevelFlowers()
   allInner2 = f2.getAllLowestLevelFlowers()
   for edge in edges:

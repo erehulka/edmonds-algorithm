@@ -156,6 +156,14 @@ class Instance:
       e2.type = EdgeType.OTHER
       self.blockingEdges.remove(e2)
       self.otherEdges.append(e2)
+    
+    # Also unblock all of the remaining edges in dumbbells
+    for i in range(1, len(dumbbellPath) - 1, 2):
+      edgeToBeUnblocked = findConnectingEdge(dumbbellPath[i], dumbbellPath[i+1], self.blockingEdges)
+      self.blockingEdges.remove(edgeToBeUnblocked)
+      self.otherEdges.append(edgeToBeUnblocked)
+      edgeToBeUnblocked.type = EdgeType.OTHER
+      print("UNBLOCKING", edgeToBeUnblocked)
 
   def P2(self, flower: Flower, dumbbell: Dumbbell, edge: Edge) -> None:
     print(f"P2 on {flower} {dumbbell} and edge {edge}")
@@ -301,7 +309,11 @@ class Instance:
     alternatingPath, alternatingPathVertices = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1], roots=[edge.v1.getTotalOuterFlower().getRoot(), edge.v2.getTotalOuterFlower().getRoot()])
     alternatingPathOuterVertices = getVerticesOnAlternatingPath(alternatingPathVertices)
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
-    alternatingOuterFlowers = findSubtrees(alternatingPathOuterVertices)
+    alternatingOuterFlowers, edgesToBeRemovedConnectingSubtrees = findSubtrees(alternatingPathOuterVertices, self.blockingEdges)
+
+    print("Stems", stem1, stem2)
+    print(edge, alternatingPath)
+    assert edge in alternatingPath
 
     # This path has first edge from L and last from L as well.
     # Exchange these edges between L and M.
@@ -329,6 +341,14 @@ class Instance:
       dumbbell.f2.parent = None
       dumbbell.f1.children = []
       dumbbell.f2.children = []
+
+    # Then, change each of the connecting edge to OTHER
+    for i in range(1, len(alternatingPathOuterVertices) - 1, 2):
+      edgeToBeUnblocked = findConnectingEdge(alternatingPathOuterVertices[i], alternatingPathOuterVertices[i+1], self.blockingEdges)
+      self.blockingEdges.remove(edgeToBeUnblocked)
+      self.otherEdges.append(edgeToBeUnblocked)
+      edgeToBeUnblocked.type = EdgeType.OTHER
+      print("UNBLOCKING", edgeToBeUnblocked)
     
     # Then, process the other part of the tree
     # We need to find the subtrees, which are not a part of the alternating path
