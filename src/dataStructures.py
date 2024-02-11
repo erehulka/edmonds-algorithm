@@ -212,6 +212,13 @@ class Flower:
       return self
     
     return self.innerFlowers[0].getStem()
+  
+  def changeStemAccordingToEdge(self, edge: Edge) -> None:
+    for i in range(len(self.innerFlowers)):
+      if edge.v1 in self.innerFlowers[i].getAllLowestLevelFlowers() or edge.v2 in self.innerFlowers[i].getAllLowestLevelFlowers():
+        self.innerFlowers = self.innerFlowers[i:] + self.innerFlowers[:i]
+        self.innerFlowers[0].changeStemAccordingToEdge(edge)
+        return
 
 
 class Edge:
@@ -282,12 +289,5 @@ class Dumbbell:
     return self.f1 == flower or self.f2 == flower
   
   def changeStemsInInner(self) -> None:
-    for i in range(len(self.f1.innerFlowers)):
-      if self.edge.v1 in self.f1.innerFlowers[i].getAllLowestLevelFlowers() or self.edge.v2 in self.f1.innerFlowers[i].getAllLowestLevelFlowers():
-        self.f1.innerFlowers = self.f1.innerFlowers[i:] + self.f1.innerFlowers[:i]
-        break
-
-    for i in range(len(self.f2.innerFlowers)):
-      if self.edge.v1 in self.f2.innerFlowers[i].getAllLowestLevelFlowers() or self.edge.v2 in self.f2.innerFlowers[i].getAllLowestLevelFlowers():
-        self.f2.innerFlowers = self.f2.innerFlowers[i:] + self.f2.innerFlowers[:i]
-        break
+    self.f1.changeStemAccordingToEdge(self.edge)
+    self.f2.changeStemAccordingToEdge(self.edge)

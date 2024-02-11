@@ -92,8 +92,8 @@ class Instance:
     
     # Find out from which inner flower Kt the edge goes to the parent. Get index.
     flowerIndexToParent = 0
+    assert flower.parentEdge is not None
     for inner in flower.innerFlowers:
-      assert flower.parentEdge is not None
       lowLevelFlowers = inner.getAllLowestLevelFlowers()
       if flower.parentEdge.v1 in lowLevelFlowers or flower.parentEdge.v2 in lowLevelFlowers:
         break
