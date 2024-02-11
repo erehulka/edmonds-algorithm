@@ -233,14 +233,12 @@ class Instance:
       child.parent = newFlower
       assert child.parentEdge is not None
       # parentEdge stays the same
+
     if W.parent != None:
       assert W.parent is not None
       W.parent.children.remove(W)
       W.parent.children.append(newFlower)
-    newFlower.parentEdge = W.parentEdge
-    
-    # If this is a new root of the tree, change the root accordingly.
-    if newFlower.parent is None:
+    else:
       for tree in self.trees:
         if tree.root == W:
           tree.root = newFlower
@@ -251,6 +249,7 @@ class Instance:
       flower.children = []
       flower.outerFlower = newFlower
       flower.parent = None
+      flower.parentEdge = None
 
   def P4(self, edge: Edge) -> None:
     print(f"P4 on {edge}")
@@ -279,7 +278,6 @@ class Instance:
 
     # Special case - if both flowers are representing vertices and are not in trees, just add selected edge and add to dumbbells
     if edge.v1.outerFlower == None and edge.v2.outerFlower == None and edge.v1.parent is None and len(edge.v1.children) == 0 and edge.v2.parent is None and len(edge.v2.children) == 0:
-      edge.type = EdgeType.SELECTED
       self.otherEdges.remove(edge)
       self.selectedEdges.append(edge)
       edge.type = EdgeType.SELECTED
@@ -300,10 +298,10 @@ class Instance:
     # Find alternating path between the stem of T1 and T2 through the edge
     stem1 = edge.v1.getTotalOuterFlower().getRoot().getStem()
     stem2 = edge.v2.getTotalOuterFlower().getRoot().getStem()
-    alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1], roots=[edge.v1.getTotalOuterFlower().getRoot(), edge.v2.getTotalOuterFlower().getRoot()])
-    alternatingPathVertices = getVerticesOnAlternatingPath(alternatingPath)
+    alternatingPath, alternatingPathVertices = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1], roots=[edge.v1.getTotalOuterFlower().getRoot(), edge.v2.getTotalOuterFlower().getRoot()])
+    alternatingPathOuterVertices = getVerticesOnAlternatingPath(alternatingPathVertices)
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
-    alternatingOuterFlowers = findSubtrees(alternatingPath, self.blockingEdges + self.selectedEdges)
+    alternatingOuterFlowers = findSubtrees(alternatingPathOuterVertices)
 
     # This path has first edge from L and last from L as well.
     # Exchange these edges between L and M.
@@ -321,9 +319,9 @@ class Instance:
 
     # Destructurize the tree into dumbbells
     # First, make each pair from the path into dumbbells
-    assert len(alternatingPathVertices) % 2 == 0
-    for i in range(0, len(alternatingPathVertices), 2):
-      dumbbell = Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], findConnectingEdge(alternatingPathVertices[i], alternatingPathVertices[i+1], self.selectedEdges))
+    assert len(alternatingPathOuterVertices) % 2 == 0
+    for i in range(0, len(alternatingPathOuterVertices), 2):
+      dumbbell = Dumbbell(alternatingPathOuterVertices[i], alternatingPathOuterVertices[i+1], findConnectingEdge(alternatingPathOuterVertices[i], alternatingPathOuterVertices[i+1], self.selectedEdges))
       self.dumbbells.append(dumbbell)
 
       # Remove parent and children
