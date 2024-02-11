@@ -260,6 +260,7 @@ class Dumbbell:
     self.f1 = f1
     self.f2 = f2
     self.edge = edge
+    self.changeStemsInInner()
 
   def makeIntoSubTree(self, edge: Edge) -> Flower:
     # Find out which edge end is actually in the dumbbell.

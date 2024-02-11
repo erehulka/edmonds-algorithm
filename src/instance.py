@@ -324,10 +324,6 @@ class Instance:
     assert len(alternatingPathVertices) % 2 == 0
     for i in range(0, len(alternatingPathVertices), 2):
       dumbbell = Dumbbell(alternatingPathVertices[i], alternatingPathVertices[i+1], findConnectingEdge(alternatingPathVertices[i], alternatingPathVertices[i+1], self.selectedEdges))
-      
-      # Change the stems to new connecting vertices.
-      dumbbell.changeStemsInInner()
-
       self.dumbbells.append(dumbbell)
 
       # Remove parent and children
