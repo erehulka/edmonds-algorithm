@@ -250,6 +250,7 @@ class Instance:
     for flower in innerFlowers:
       flower.children = []
       flower.outerFlower = newFlower
+      flower.parent = None
 
   def P4(self, edge: Edge) -> None:
     print(f"P4 on {edge}")
@@ -297,8 +298,8 @@ class Instance:
     self.blockingEdges.append(edge)
 
     # Find alternating path between the stem of T1 and T2 through the edge
-    stem1 = edge.v1.getRoot().getStem()
-    stem2 = edge.v2.getRoot().getStem()
+    stem1 = edge.v1.getTotalOuterFlower().getRoot().getStem()
+    stem2 = edge.v2.getTotalOuterFlower().getRoot().getStem()
     alternatingPath: List[Edge] = findAlternatingPath(end=stem2, pathSoFar=[], currentVertex=stem1, mustUseBlocked=True, visitedVertices=[stem1], roots=[edge.v1.getTotalOuterFlower().getRoot(), edge.v2.getTotalOuterFlower().getRoot()])
     alternatingPathVertices = getVerticesOnAlternatingPath(alternatingPath)
     # Find out what are the outer flowers of this path. Also save the edges connecting these flowers
